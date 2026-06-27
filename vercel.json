@@ -1,5 +1,6 @@
 {
   "version": 2,
+  "framework": null,
   "routes": [
     { "src": "/health", "dest": "/api/health.py" },
     { "src": "/api/start", "dest": "/api/start.py" },
