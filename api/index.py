@@ -1,5 +1,4 @@
 from http.server import BaseHTTPRequestHandler
-import os
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
