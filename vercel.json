@@ -4,6 +4,7 @@
   "routes": [
     { "src": "/health", "dest": "/api/health.py" },
     { "src": "/api/start", "dest": "/api/start.py" },
+    { "src": "/api/workflow_status", "dest": "/api/workflow_status.py" },
     { "src": "/(.*)", "dest": "/api/index.py" }
   ]
 }

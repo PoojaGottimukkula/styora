@@ -235,6 +235,7 @@
 
           <div class="message" id="message"></div>
           <pre class="result-box" id="resultOutput">Click the button to see the workflow response.</pre>
+          <div class="result-box" id="workflowSummary" style="margin-top: 12px;">Workflow status will appear here.</div>
         </div>
 
         <aside class="panel facts">
@@ -264,6 +265,7 @@
       const refreshButton = document.getElementById("refreshButton");
       const message = document.getElementById("message");
       const resultOutput = document.getElementById("resultOutput");
+      const workflowSummary = document.getElementById("workflowSummary");
       const statusPill = document.getElementById("statusPill");
       const emailStatus = document.getElementById("emailStatus");
       const previewStatus = document.getElementById("previewStatus");
@@ -292,6 +294,16 @@
           emailStatus.textContent = "Unknown";
           previewStatus.textContent = "Unknown";
           workerStatus.textContent = "Unknown";
+        }
+
+        try {
+          const workflowResponse = await fetch("/api/workflow_status");
+          const workflowData = await workflowResponse.json();
+          const productCount = Array.isArray(workflowData.products) ? workflowData.products.length : 0;
+          const emailCount = Array.isArray(workflowData.preview_emails) ? workflowData.preview_emails.length : 0;
+          workflowSummary.textContent = `Status: ${workflowData.status || "idle"}\nProducts found: ${productCount}\nApproval emails queued: ${emailCount}`;
+        } catch (error) {
+          workflowSummary.textContent = "Workflow status unavailable yet.";
         }
       }
 

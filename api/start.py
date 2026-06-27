@@ -3,8 +3,11 @@ import json
 import os
 import subprocess
 import sys
+import threading
 import urllib.error
 import urllib.request
+
+from utils.workflow_state import write_workflow_state
 
 try:
     from dotenv import load_dotenv
@@ -19,6 +22,14 @@ def dispatch_start_request():
 
     if not worker_url:
         project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        write_workflow_state(
+            {
+                "status": "starting",
+                "products": [],
+                "preview_emails": [],
+            },
+            base_dir=project_root,
+        )
         worker_process = subprocess.Popen(
             [sys.executable, "main.py"],
             cwd=project_root,
@@ -84,6 +95,16 @@ class handler(BaseHTTPRequestHandler):
         result = dispatch_start_request()
         status = 200 if result["ok"] else 502
         json_response(self, status, result)
+
+    def do_GET(self):
+        json_response(
+            self,
+            405,
+            {
+                "ok": False,
+                "message": "Use POST to start the bot.",
+            },
+        )
 
     def do_GET(self):
         json_response(
