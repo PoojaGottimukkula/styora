@@ -233,6 +233,9 @@
             <button class="secondary" id="refreshButton" type="button">Refresh Status</button>
           </div>
 
+          <label for="recipientEmail" style="display:block; margin-top:16px; color:var(--muted); font-size:14px;">Preview email recipient</label>
+          <input id="recipientEmail" type="email" value="sherugottimukkula@gmail.com" style="width:100%; margin-top:8px; padding:10px 12px; border:1px solid var(--line); border-radius:6px; font:inherit;" />
+
           <div class="message" id="message"></div>
           <pre class="result-box" id="resultOutput">Click the button to see the workflow response.</pre>
           <div class="result-box" id="workflowSummary" style="margin-top: 12px;">Workflow status will appear here.</div>
@@ -266,6 +269,7 @@
       const message = document.getElementById("message");
       const resultOutput = document.getElementById("resultOutput");
       const workflowSummary = document.getElementById("workflowSummary");
+      const recipientEmail = document.getElementById("recipientEmail");
       const statusPill = document.getElementById("statusPill");
       const emailStatus = document.getElementById("emailStatus");
       const previewStatus = document.getElementById("previewStatus");
@@ -314,7 +318,11 @@
         resultOutput.textContent = "Waiting for workflow response...";
 
         try {
-          const response = await fetch("/api/start", { method: "POST" });
+          const response = await fetch("/api/start", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ recipient_email: recipientEmail.value })
+          });
           const data = await response.json();
           resultOutput.textContent = JSON.stringify(data, null, 2);
           if (response.ok && data.ok) {

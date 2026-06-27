@@ -3,7 +3,6 @@ import json
 import os
 import subprocess
 import sys
-import threading
 import urllib.error
 import urllib.request
 
@@ -16,9 +15,17 @@ except ImportError:
     pass
 
 
-def dispatch_start_request():
+def dispatch_start_request(payload=b""):
     worker_url = os.getenv("WORKER_START_URL")
     worker_token = os.getenv("WORKER_API_TOKEN")
+
+    recipient_email = ""
+    if payload:
+        try:
+            data = json.loads(payload.decode("utf-8"))
+            recipient_email = data.get("recipient_email", "") or ""
+        except Exception:
+            recipient_email = ""
 
     if not worker_url:
         project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -30,16 +37,21 @@ def dispatch_start_request():
             },
             base_dir=project_root,
         )
+        env = os.environ.copy()
+        if recipient_email:
+            env["PREVIEW_EMAIL"] = recipient_email
         worker_process = subprocess.Popen(
             [sys.executable, "main.py"],
             cwd=project_root,
             stdout=subprocess.DEVNULL,
             stderr=subprocess.STDOUT,
+            env=env,
         )
         return {
             "ok": True,
-            "message": "No worker URL configured; started the local bot worker as a fallback.",
+            "message": "No worker URL configured; started the local bot worker as a fallback. Preview emails will be sent to the selected recipient.",
             "worker": {"pid": worker_process.pid},
+            "recipient_email": recipient_email or os.getenv("PREVIEW_EMAIL", ""),
         }
 
     headers = {"Content-Type": "application/json"}
@@ -92,19 +104,11 @@ def json_response(handler, status, body):
 
 class handler(BaseHTTPRequestHandler):
     def do_POST(self):
-        result = dispatch_start_request()
+        length = int(self.headers.get("Content-Length", "0"))
+        payload = self.rfile.read(length) if length else b""
+        result = dispatch_start_request(payload)
         status = 200 if result["ok"] else 502
         json_response(self, status, result)
-
-    def do_GET(self):
-        json_response(
-            self,
-            405,
-            {
-                "ok": False,
-                "message": "Use POST to start the bot.",
-            },
-        )
 
     def do_GET(self):
         json_response(
