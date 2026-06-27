@@ -140,6 +140,20 @@
         color: var(--warn);
       }
 
+      .result-box {
+        margin-top: 14px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 12px;
+        background: #f8fafc;
+        color: var(--text);
+        white-space: pre-wrap;
+        word-break: break-word;
+        font-family: "SFMono-Regular", ui-monospace, Menlo, Monaco, Consolas, monospace;
+        font-size: 13px;
+        line-height: 1.5;
+      }
+
       .facts {
         padding: 20px;
       }
@@ -220,6 +234,7 @@
           </div>
 
           <div class="message" id="message"></div>
+          <pre class="result-box" id="resultOutput">Click the button to see the workflow response.</pre>
         </div>
 
         <aside class="panel facts">
@@ -248,6 +263,7 @@
       const startButton = document.getElementById("startButton");
       const refreshButton = document.getElementById("refreshButton");
       const message = document.getElementById("message");
+      const resultOutput = document.getElementById("resultOutput");
       const statusPill = document.getElementById("statusPill");
       const emailStatus = document.getElementById("emailStatus");
       const previewStatus = document.getElementById("previewStatus");
@@ -281,20 +297,25 @@
 
       async function startWorkflow() {
         startButton.disabled = true;
+        startButton.textContent = "Starting...";
         setMessage("Sending start request...", "");
+        resultOutput.textContent = "Waiting for workflow response...";
 
         try {
           const response = await fetch("/api/start", { method: "POST" });
           const data = await response.json();
+          resultOutput.textContent = JSON.stringify(data, null, 2);
           if (response.ok && data.ok) {
-            setMessage(data.message, "ok");
+            setMessage(data.message || "Workflow started.", "ok");
           } else {
             setMessage(data.message || "Could not start workflow.", "warn");
           }
         } catch (error) {
+          resultOutput.textContent = JSON.stringify({ ok: false, message: String(error) }, null, 2);
           setMessage("Could not reach the start endpoint.", "warn");
         } finally {
           startButton.disabled = false;
+          startButton.textContent = "Start Workflow";
         }
       }
 
