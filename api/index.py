@@ -27,21 +27,40 @@ class handler(BaseHTTPRequestHandler):
       p { margin: 0; color: var(--muted); line-height: 1.6; }
       .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); padding: 24px; margin-top: 20px; }
       .pill { display: inline-block; margin-top: 10px; padding: 8px 14px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); font-size: 14px; }
-      .cta { display: inline-block; margin-top: 18px; padding: 12px 18px; border-radius: 8px; background: var(--accent); color: white; text-decoration: none; font-weight: 700; }
-      .cta:hover { background: var(--accent-dark); }
+      button, .cta { display: inline-block; margin-top: 18px; padding: 12px 18px; border-radius: 8px; background: var(--accent); color: white; text-decoration: none; font-weight: 700; border: 0; cursor: pointer; }
+      button:hover, .cta:hover { background: var(--accent-dark); }
+      button:disabled { opacity: 0.7; cursor: not-allowed; }
+      #result { margin-top: 14px; color: var(--muted); white-space: pre-wrap; }
     </style>
   </head>
   <body>
     <main>
       <div class=\"pill\">Vercel • Python • Workflow UI</div>
       <h1>Styora Control</h1>
-      <p>This is the live control panel for your Styora workflow. It is connected to the deployed Vercel app and ready for your automation actions.</p>
+      <p>This is the live control panel for your Styora workflow. It sends the start request to the worker endpoint and shows the response.</p>
       <div class=\"panel\">
-        <h2>What you can do</h2>
-        <p>Start the worker flow, review health status, and trigger the automation endpoints from the deployed app.</p>
-        <a class=\"cta\" href=\"/health\">Check health</a>
+        <h2>Run the workflow</h2>
+        <button id=\"runButton\" type=\"button\">Start workflow</button>
+        <div id=\"result\">Click the button to trigger the end-to-end flow.</div>
       </div>
     </main>
+    <script>
+      const runButton = document.getElementById('runButton');
+      const result = document.getElementById('result');
+      runButton.addEventListener('click', async () => {
+        runButton.disabled = true;
+        result.textContent = 'Starting...';
+        try {
+          const res = await fetch('/api/start', { method: 'POST' });
+          const data = await res.json();
+          result.textContent = JSON.stringify(data, null, 2);
+        } catch (error) {
+          result.textContent = 'Could not reach the workflow endpoint. ' + error;
+        } finally {
+          runButton.disabled = false;
+        }
+      });
+    </script>
   </body>
 </html>"""
         payload = html.encode("utf-8")
