@@ -1,0 +1,11 @@
+services:
+  - name: styora-worker
+    type: web
+    env: python
+    buildCommand: ""
+    startCommand: "python worker_server.py"
+    autoDeploy: true
+    repo: ""
+    branch: "main"
+    plan: free
+    # Note: Add secrets and environment variables in the Render dashboard for security.

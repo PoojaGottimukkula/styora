@@ -1,0 +1,13 @@
+venv/
+.venv/
+chrome_profile/
+testing/
+approvals/
+images/
+__pycache__/
+**/__pycache__/
+*.pyc
+.env
+.env.*
+product_links.txt
+.git/
