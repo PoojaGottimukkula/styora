@@ -1,34 +1,8 @@
 {
+  "version": 2,
   "routes": [
-    {
-      "src": "/health",
-      "dest": "/api/health.py"
-    },
-    {
-      "src": "/api/start",
-      "dest": "/api/start.py"
-    }
-  ],
-  "rewrites": [
-    {
-      "source": "/",
-      "destination": {
-        "type": "service",
-        "service": "web"
-      }
-    },
-    {
-      "source": "/(.*)",
-      "destination": {
-        "type": "service",
-        "service": "web"
-      }
-    }
-  ],
-  "services": {
-    "web": {
-      "root": ".",
-      "entrypoint": "worker_server.py"
-    }
-  }
+    { "src": "/health", "dest": "/api/health.py" },
+    { "src": "/api/start", "dest": "/api/start.py" },
+    { "src": "/(.*)", "dest": "/api/index.py" }
+  ]
 }
