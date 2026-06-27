@@ -27,7 +27,7 @@ def dispatch_start_request(payload=b""):
         except Exception:
             recipient_email = ""
 
-    if not worker_url:
+    if not worker_url or worker_url.startswith("https://styora-iota.vercel.app") or worker_url.startswith("http://localhost"):
         project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         write_workflow_state(
             {
