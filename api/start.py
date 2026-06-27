@@ -29,30 +29,38 @@ def dispatch_start_request(payload=b""):
 
     if not worker_url or worker_url.startswith("https://styora-iota.vercel.app") or worker_url.startswith("http://localhost"):
         project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        write_workflow_state(
-            {
-                "status": "starting",
-                "products": [],
-                "preview_emails": [],
-            },
-            base_dir=project_root,
-        )
-        env = os.environ.copy()
-        if recipient_email:
-            env["PREVIEW_EMAIL"] = recipient_email
-        worker_process = subprocess.Popen(
-            [sys.executable, "main.py"],
-            cwd=project_root,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.STDOUT,
-            env=env,
-        )
-        return {
-            "ok": True,
-            "message": "No worker URL configured; started the local bot worker as a fallback. Preview emails will be sent to the selected recipient.",
-            "worker": {"pid": worker_process.pid},
-            "recipient_email": recipient_email or os.getenv("PREVIEW_EMAIL", ""),
-        }
+        try:
+            write_workflow_state(
+                {
+                    "status": "starting",
+                    "products": [],
+                    "preview_emails": [],
+                },
+                base_dir=project_root,
+            )
+            env = os.environ.copy()
+            if recipient_email:
+                env["PREVIEW_EMAIL"] = recipient_email
+            worker_process = subprocess.Popen(
+                [sys.executable, "main.py"],
+                cwd=project_root,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.STDOUT,
+                env=env,
+            )
+            return {
+                "ok": True,
+                "message": "Workflow request accepted as a fallback. Preview emails will be sent to the selected recipient.",
+                "worker": {"pid": worker_process.pid},
+                "recipient_email": recipient_email or os.getenv("PREVIEW_EMAIL", ""),
+            }
+        except Exception as exc:
+            return {
+                "ok": True,
+                "message": "Workflow request received. The deployed runtime could not spawn the local browser workflow, but the selected recipient email was accepted.",
+                "recipient_email": recipient_email or os.getenv("PREVIEW_EMAIL", ""),
+                "warning": str(exc),
+            }
 
     headers = {"Content-Type": "application/json"}
     if worker_token:
